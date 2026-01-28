@@ -1,26 +1,22 @@
-# 📋 Pastebin Lite
+# Pastebin Lite
 
-A simple, fast pastebin application built with Next.js. Create and share temporary text snippets with unique URLs.
+A simple pastebin application where users can create and share temporary text snippets.
 
-## Features
+## Deployed URL
+https://your-app.vercel.app *(Update with your actual Vercel deployment URL)*
 
-- ✨ Create pastes with a simple interface
-- 🔗 Share pastes via unique URLs
-- 💾 Persistent storage (file-based for local development, Vercel KV for production)
-- 🎨 Clean, minimal UI
-- ⚡ Fast and responsive
+## GitHub Repository
+https://github.com/yourusername/pastebin-lite *(Update with your actual GitHub URL)*
 
-## Live Demo
+---
 
-**Deployed URL**: https://your-app.vercel.app *(Replace with your deployed URL)*
-
-## Quick Start
+## How to Run Locally
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
+- npm
 
-### Installation
+### Installation & Setup
 
 1. Clone the repository:
 ```bash
@@ -40,86 +36,61 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## How to Use
+---
 
-1. Go to the home page
-2. Type or paste your text in the textarea
-3. Click the "Create Paste" button
-4. Share the generated link with others
+## Persistence Layer
 
-## Architecture & Design Decisions
+### Local Development
+- **Storage**: File-based (`.pastebin-data/` directory)
+- **Format**: JSON files
+- **How it works**: 
+  - Each paste is stored as a separate JSON file
+  - Keys are hex-encoded to work on Windows (filesystem-compatible)
+  - Data persists across server reloads
 
-### Persistence Layer
+### Production (Vercel)
+- **Storage**: Vercel KV (serverless Redis)
+- **Setup**: Add environment variables:
+  ```
+  KV_REST_API_URL=your_kv_url
+  KV_REST_API_TOKEN=your_kv_token
+  ```
 
-**Local Development**: File-based storage (`.pastebin-data/` directory)
-- Data is stored as JSON files on the filesystem
-- Keys are encoded in hexadecimal to avoid filesystem issues (Windows doesn't allow colons in filenames)
-- Simple, no external dependencies needed for development
-- Data persists across server reloads
+---
 
-**Production (Vercel)**: Vercel KV (Redis-compatible serverless database)
-- Scalable and reliable
-- Set environment variables: `KV_REST_API_URL` and `KV_REST_API_TOKEN`
+## Important Design Decisions
 
-### Key Design Decisions
+1. **File-Based Storage for Development**
+   - No external database/service required for local testing
+   - Simple debugging - data visible in `.pastebin-data/` folder
+   - Keys encoded in hex to avoid Windows filename issues
 
-1. **File-based Storage for Development**
-   - Avoids the need for external services during local development
-   - Files are encoded with hex keys to work cross-platform
-   - Simple debugging - data is visible in `.pastebin-data/` folder
-
-2. **Next.js App Router**
-   - Used for both frontend pages and API routes
-   - Dynamic routes: `/p/[id]` for viewing pastes
-   - Server-side params handling with async/await
-
-3. **Client-side Components**
-   - Home page: Create pastes with real-time feedback
-   - Paste page: Display paste content with back button
-   - URL-based ID extraction to handle hydration issues
-
-4. **Minimal UI**
-   - No external CSS framework (except Tailwind imports)
-   - Inline styles for quick styling
-   - Responsive textarea and button with hover effects
-
-5. **ID Generation**
-   - Using `nanoid(8)` for short, unique paste IDs
+2. **nanoid for Paste IDs**
+   - Short unique IDs (8 characters)
    - Example: `Au-e0r44`
 
-## Project Structure
+3. **Next.js App Router**
+   - API routes: `/api/pastes` (POST to create)
+   - API routes: `/api/pastes/[id]` (GET to fetch)
+   - Pages: `/p/[id]` (view paste)
 
-```
-pastebin-lite/
-├── app/
-│   ├── page.js                 # Home page (create paste)
-│   ├── layout.tsx              # Root layout
-│   ├── globals.css             # Global styles
-│   ├── api/
-│   │   ├── healthz/
-│   │   │   └── route.js        # Health check endpoint
-│   │   └── pastes/
-│   │       ├── route.js        # POST: Create paste
-│   │       └── [id]/
-│   │           └── route.js    # GET: Fetch paste
-│   └── p/
-│       └── [id]/
-│           └── page.js         # View paste page
-├── lib/
-│   └── redis.js                # KV storage abstraction layer
-├── package.json
-└── README.md
-```
+4. **Client-Side Components**
+   - Paste creation form on home page
+   - Paste viewing on dedicated page
+   - Minimal UI with inline styling
 
-## API Endpoints
+---
 
-### POST `/api/pastes`
-Create a new paste
+## API Usage
+
+### Create a Paste
 ```bash
-curl -X POST http://localhost:3000/api/pastes \
-  -H "Content-Type: application/json" \
-  -d '{"content": "Hello World"}'
+POST /api/pastes
+Content-Type: application/json
+
+{"content": "Your text here"}
 ```
+
 Response:
 ```json
 {
@@ -128,113 +99,61 @@ Response:
 }
 ```
 
-### GET `/api/pastes/[id]`
-Fetch a paste by ID
+### Fetch a Paste
 ```bash
-curl http://localhost:3000/api/pastes/Au-e0r44
+GET /api/pastes/Au-e0r44
 ```
+
 Response:
 ```json
 {
-  "content": "Hello World"
+  "content": "Your text here"
 }
 ```
 
-### GET `/api/healthz`
-Health check
-```bash
-curl http://localhost:3000/api/healthz
-```
-Response:
-```json
-{ "ok": true }
-```
+---
+
+## Tech Stack
+
+- **Framework**: Next.js
+- **Runtime**: Node.js
+- **Storage**: File-based (dev) / Vercel KV (prod)
+- **Styling**: Tailwind CSS
+
+---
 
 ## Deployment to Vercel
 
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Click "New Project" and import your repository
-4. Vercel will auto-detect Next.js
-5. Set environment variables in Settings → Environment Variables:
-   - `KV_REST_API_URL`: Your Vercel KV endpoint
-   - `KV_REST_API_TOKEN`: Your Vercel KV token
-   - `NEXT_PUBLIC_BASE_URL`: Your production URL
-6. Click Deploy
+1. Push code to GitHub
+2. Go to vercel.com → New Project
+3. Import your GitHub repository
+4. Add environment variables (KV_REST_API_URL, KV_REST_API_TOKEN)
+5. Deploy
 
-### Getting Vercel KV Credentials
-1. In Vercel dashboard, go to Storage
-2. Create or select your KV database
-3. Click on the database to view credentials
-4. Copy the `.env.local` section values
-5. Add them to your Vercel project settings
+---
 
-## Development Commands
+## File Structure
 
-```bash
-# Development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linter
-npm run lint
+```
+pastebin-lite/
+├── app/
+│   ├── page.js              # Home page (create paste)
+│   ├── layout.tsx           # Root layout
+│   ├── api/
+│   │   └── pastes/
+│   │       ├── route.js     # POST: create paste
+│   │       └── [id]/
+│   │           └── route.js # GET: fetch paste
+│   └── p/[id]/
+│       └── page.js          # View paste
+├── lib/
+│   └── redis.js             # Storage abstraction
+└── package.json
 ```
 
-## Environment Variables
+---
 
-Create a `.env.local` file for local development:
-```env
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
+## Status
 
-For production (Vercel):
-```env
-KV_REST_API_URL=https://[your-kv-url].kv.vercel.sh
-KV_REST_API_TOKEN=your_actual_token_here
-NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
-```
-
-## Technologies Used
-
-- **Framework**: Next.js 16.1
-- **Language**: JavaScript/React
-- **Styling**: Tailwind CSS
-- **Storage**: File-based (development) / Vercel KV (production)
-- **ID Generation**: nanoid
-- **Runtime**: Node.js
-
-## Troubleshooting
-
-### "Paste not found" error
-- Make sure the server is running (`npm run dev`)
-- Check that the paste ID is correct in the URL
-- For file-based storage, verify `.pastebin-data/` folder exists
-
-### "Invalid JSON body" error
-- Ensure you're sending valid JSON in the POST request
-- Check that the `Content-Type` header is `application/json`
-
-## Future Enhancements
-
-- [ ] TTL (Time-To-Live) for auto-deleting pastes
-- [ ] View count tracking
-- [ ] Max views limit
-- [ ] Copy to clipboard button
-- [ ] Syntax highlighting for code
-- [ ] Dark mode toggle
-- [ ] Delete paste functionality
-- [ ] User authentication
-- [ ] Paste expiration management
-
-## License
-
-MIT
-
-## Support
-
-For issues and questions, open a GitHub issue in the repository.
+✅ Complete and working locally  
+⏳ Ready for deployment to Vercel
