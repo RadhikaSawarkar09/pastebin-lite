@@ -1,19 +1,70 @@
-async function getPaste(id) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/pastes/${id}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) return null;
-  return res.json();
-}
+"use client";
 
-export default async function PastePage({ params }) {
-  const paste = await getPaste(params.id);
-  if (!paste) return <h1>404 – Paste not found</h1>;
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function PastePage() {
+  const router = useRouter();
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [pasteId, setPasteId] = useState(null);
+
+  // Extract ID from URL pathname
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    const id = pathname.split("/").pop();
+    if (id) {
+      setPasteId(id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!pasteId) {
+      return;
+    }
+
+    async function fetchPaste() {
+      try {
+        const res = await fetch(`/api/pastes/${pasteId}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Paste not found");
+          setLoading(false);
+          return;
+        }
+
+        setContent(data.content);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load paste");
+        setLoading(false);
+      }
+    }
+
+    fetchPaste();
+  }, [pasteId]);
+
+  if (loading) return <main style={{ padding: 30 }}>Loading...</main>;
+  if (error) return <main style={{ padding: 30, color: "red" }}>{error}</main>;
 
   return (
-    <pre style={{ whiteSpace: "pre-wrap" }}>
-      {paste.content}
-    </pre>
+    <main style={{ padding: 30, fontFamily: "Arial" }}>
+      <h1>📋 Paste View</h1>
+      <pre
+        style={{
+          backgroundColor: "#f5f5f5",
+          padding: "15px",
+          borderRadius: "5px",
+          overflow: "auto",
+        }}
+      >
+        {content}
+      </pre>
+      <br />
+      <a href="/">← Back to Create</a>
+    </main>
   );
 }

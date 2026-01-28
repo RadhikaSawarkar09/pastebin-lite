@@ -1,47 +1,73 @@
 import kv from "../../../../lib/redis";
+import { nanoid } from "nanoid";
 
+export async function POST(req) {
+  let body;
 
-
-function now(req) {
-  if (process.env.TEST_MODE === "1") {
-    const testNow = req.headers.get("x-test-now-ms");
-    if (testNow) return Number(testNow);
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ error: "Invalid JSON body" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
   }
-  return Date.now();
+
+  const { content } = body;
+
+  if (!content || typeof content !== "string" || !content.trim()) {
+    return new Response(
+      JSON.stringify({ error: "Content is required" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const id = nanoid(8);
+
+  await kv.set(`paste:${id}`, {
+    content,
+    createdAt: Date.now(),
+    views: 0,
+    max_views: null,
+    ttl_seconds: null,
+  });
+
+  return new Response(
+    JSON.stringify({
+      id,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/p/${id}`,
+    }),
+    { status: 201, headers: { "Content-Type": "application/json" } }
+  );
 }
 
-export async function GET(req, { params }) {
-  const key = `paste:${params.id}`;
-  const paste = await kv.get(key);
-  if (!paste) {
-    return Response.json({ error: "Not found" }, { status: 404 });
-  }
+export async function GET(req, context) {
+  const params = await context.params;
+  const id = params?.id;
+  console.log(`🔍 Fetching paste with ID: ${id}`);
 
-  const currentTime = now(req);
+  try {
+    const paste = await kv.get(`paste:${id}`);
+    console.log(`Retrieved paste:`, paste);
 
-  // TTL check
-  if (paste.ttl_seconds) {
-    const expiresAt = paste.createdAt + paste.ttl_seconds * 1000;
-    if (currentTime >= expiresAt) {
-      await kv.del(key);
-      return Response.json({ error: "Expired" }, { status: 404 });
+    if (!paste) {
+      console.log(`❌ Paste not found for ID: ${id}`);
+      return new Response(
+        JSON.stringify({ error: "Paste not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
+
+    console.log(`✅ Returning paste content`);
+    return new Response(
+      JSON.stringify({ content: paste.content }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("Error fetching paste:", err);
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch paste" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-
-  // View limit check
-  if (paste.max_views !== null && paste.views >= paste.max_views) {
-    return Response.json({ error: "View limit exceeded" }, { status: 404 });
-  }
-
-  paste.views += 1;
-  await kv.set(key, paste);
-
-  return Response.json({
-    content: paste.content,
-    remaining_views:
-      paste.max_views === null ? null : paste.max_views - paste.views,
-    expires_at: paste.ttl_seconds
-      ? new Date(paste.createdAt + paste.ttl_seconds * 1000).toISOString()
-      : null,
-  });
 }
