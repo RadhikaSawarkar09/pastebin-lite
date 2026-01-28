@@ -1,6 +1,5 @@
 import { nanoid } from "nanoid";
-import kv from "@/lib/redis";
-
+import kv from "../../lib/redis";
 export async function POST(req) {
   const body = await req.json();
   const { content, ttl_seconds, max_views } = body;
