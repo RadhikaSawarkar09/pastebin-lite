@@ -1,6 +1,7 @@
 import kv from "../../../lib/redis";
 
 
+
 export async function GET() {
   try {
     await kv.ping();
