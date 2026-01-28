@@ -2,11 +2,11 @@
 
 A simple pastebin application where users can create and share temporary text snippets.
 
-## Deployed URL
-https://your-app.vercel.app *(Update with your actual Vercel deployment URL)*
-
+## Deployed URL\
+(https://vercel.com/radhikasawarkar09s-projects/pastebin-lite-mlau/JRATuXizWRCJZZ2WEDmPTQuXT1pS)
+https://pastebin-lite-mlau.vercel.app/
 ## GitHub Repository
-https://github.com/yourusername/pastebin-lite *(Update with your actual GitHub URL)*
+git clone https://github.com/RadhikaSawarkar09/pastebin-lite.git
 
 ---
 
@@ -20,7 +20,7 @@ https://github.com/yourusername/pastebin-lite *(Update with your actual GitHub U
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/pastebin-lite.git
+git clone https://github.com/RadhikaSawarkar09/pastebin-lite.git
 cd pastebin-lite
 ```
 
@@ -50,22 +50,14 @@ npm run dev
 
 ### Production (Vercel)
 - **Storage**: Vercel KV (serverless Redis)
-- **Setup**: Add environment variables:
+- **Setup**: Add environment variables:NEXT_KEY=R1234S
   ```
-  KV_REST_API_URL=your_kv_url
-  KV_REST_API_TOKEN=your_kv_token
-  ```
-
----
+ 
 
 ## Important Design Decisions
 
-1. **File-Based Storage for Development**
-   - No external database/service required for local testing
-   - Simple debugging - data visible in `.pastebin-data/` folder
-   - Keys encoded in hex to avoid Windows filename issues
 
-2. **nanoid for Paste IDs**
+1. **nanoid for Paste IDs**
    - Short unique IDs (8 characters)
    - Example: `Au-e0r44`
 
@@ -81,44 +73,12 @@ npm run dev
 
 ---
 
-## API Usage
-
-### Create a Paste
-```bash
-POST /api/pastes
-Content-Type: application/json
-
-{"content": "Your text here"}
-```
-
-Response:
-```json
-{
-  "id": "Au-e0r44",
-  "url": "http://localhost:3000/p/Au-e0r44"
-}
-```
-
-### Fetch a Paste
-```bash
-GET /api/pastes/Au-e0r44
-```
-
-Response:
-```json
-{
-  "content": "Your text here"
-}
-```
-
----
-
 ## Tech Stack
 
 - **Framework**: Next.js
 - **Runtime**: Node.js
 - **Storage**: File-based (dev) / Vercel KV (prod)
-- **Styling**: Tailwind CSS
+- **Styling**:  CSS
 
 ---
 
@@ -155,5 +115,5 @@ pastebin-lite/
 
 ## Status
 
-✅ Complete and working locally  
-⏳ Ready for deployment to Vercel
+ Complete and working locally  
+ Ready for deployment to Vercel
